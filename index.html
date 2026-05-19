@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DSA Quiz Master 🧠</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f0c29;font-family:'Space Grotesk',system-ui,sans-serif;color:#fff;min-height:100vh}
+@keyframes confettiFall{to{top:110vh;transform:rotate(900deg) scale(0.5);opacity:0}}
+@keyframes popIn{from{transform:scale(0.4) rotate(-10deg);opacity:0}60%{transform:scale(1.1) rotate(2deg)}to{transform:scale(1) rotate(0);opacity:1}}
+@keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes floatBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes barGrow{from{width:0}to{width:var(--w)}}
+@keyframes shine{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.topic-card{transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1)!important;cursor:pointer}
+.topic-card:hover{transform:translateY(-8px) scale(1.04)!important}
+.opt-btn:not(:disabled):hover{background:rgba(255,255,255,0.12)!important;transform:translateX(5px)!important}
+.btn-p{transition:all 0.18s;cursor:pointer}
+.btn-p:hover{filter:brightness(1.15);transform:translateY(-2px)}
+.btn-p:active{transform:translateY(1px)}
+.wrap{max-width:780px;margin:0 auto;padding:20px 16px 48px}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#1a1a3e}::-webkit-scrollbar-thumb{background:#5F27CD;border-radius:99px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef} = React;
+
+const TOPICS = [
+  {id:"arrays",label:"Arrays",emoji:"🔢",color:"#FF6B6B"},
+  {id:"strings",label:"Strings",emoji:"🔤",color:"#FF9F43"},
+  {id:"linkedlist",label:"Linked Lists",emoji:"🔗",color:"#FECA57"},
+  {id:"stack",label:"Stack & Queue",emoji:"📚",color:"#48DBFB"},
+  {id:"trees",label:"Trees",emoji:"🌳",color:"#1DD1A1"},
+  {id:"graphs",label:"Graphs",emoji:"🕸️",color:"#54A0FF"},
+  {id:"hashing",label:"Hashing",emoji:"🗝️",color:"#a29bfe"},
+  {id:"sorting",label:"Sorting",emoji:"🔀",color:"#fd79a8"},
+  {id:"binarysearch",label:"Binary Search",emoji:"🔍",color:"#F368E0"},
+  {id:"recursion",label:"Recursion",emoji:"🔄",color:"#00D2D3"},
+  {id:"dp",label:"Dynamic Programming",emoji:"⚡",color:"#FECA57"},
+];
+
+const QB = {
+  arrays:{
+    theory:[
+      "Array: contiguous memory block. Access by index = O(1) (base + index × size).",
+      "Search unsorted: O(n). Search sorted: O(log n) via Binary Search.",
+      "Insert/Delete: O(n) — elements must shift. Append at end: O(1) amortized.",
+      "Two Pointers: left & right converge inward — pair sum, palindrome check, container with most water.",
+      "Sliding Window: fixed or variable size window — longest substring, max sum subarray of size k.",
+      "Prefix Sum: P[i] = A[0]+…+A[i]. Range sum(l,r) = P[r] – P[l–1] in O(1) after O(n) setup.",
+      "Kadane's Algorithm: max subarray O(n). At each index: cur = max(arr[i], cur+arr[i]). Track global max.",
+      "Dutch National Flag: 3-pointer sort for 0s, 1s, 2s in one pass O(n) O(1) space.",
+    ],
+    questions:[
+      {id:"a1",type:"theory",q:"What is the time complexity of accessing an array element by index?",options:["O(n)","O(log n)","O(1)","O(n²)"],answer:2,explanation:"O(1) — arrays are stored contiguously. Address = base + index × element_size, computed instantly. This is what makes arrays so powerful for random access."},
+      {id:"a2",type:"theory",q:"Which algorithm solves Maximum Subarray Sum in O(n)?",options:["Merge Sort","Binary Search","Kadane's Algorithm","Prefix Sum"],answer:2,explanation:"Kadane's: maintain running sum cur = max(arr[i], cur + arr[i]). If extending is worse than starting fresh, reset. Track global max throughout. O(n) time, O(1) space."},
+      {id:"a3",type:"theory",q:"Prefix Sum allows range sum queries in what complexity (after O(n) build)?",options:["O(n) per query","O(log n) per query","O(1) per query","O(n²) per query"],answer:2,explanation:"Build P[i] = A[0]+…+A[i] in O(n). Then sum(l,r) = P[r] – P[l–1] in O(1). Perfect for many range queries after one-time preprocessing."},
+      {id:"a4",type:"leetcode",q:"LC #1 Two Sum — nums=[2,7,11,15], target=9. Which gives O(n)?",options:["Sort + Two Pointers O(n log n)","Nested loops O(n²)","HashMap: store complement of each num","Binary search each element O(n log n)"],answer:2,explanation:"HashMap: for each num, check if (target–num) exists in map. Yes → found! No → store num. Single pass O(n) time, O(n) space. Classic space-time tradeoff."},
+      {id:"a5",type:"leetcode",q:"LC #53 Max Subarray — what is the answer for [-2,1,-3,4,-1,2,1,-5,4]?",options:["4","5","6","7"],answer:2,explanation:"Answer is 6 — subarray [4,–1,2,1]. Kadane's trace: running sums: –2,1,–2,4,3,5,6,1,5. Global max = 6, ending at index 6 (value 1), starting at index 3 (value 4)."},
+    ]
+  },
+  strings:{
+    theory:[
+      "Strings: immutable character arrays in most languages. String + String = new object in Java/Python.",
+      "KMP (Knuth-Morris-Pratt): pattern matching O(n+m) using LPS failure function — no backtracking.",
+      "Rabin-Karp: rolling hash for pattern matching, O(n+m) average, O(nm) worst case.",
+      "Anagram check: frequency array int[26] — O(n) time, O(1) space. Increment s1, decrement s2.",
+      "Palindrome: two pointers from both ends converging — O(n) time, O(1) space.",
+      "Sliding Window: longest substring without repeating chars — HashSet + two pointers O(n).",
+      "Trie (Prefix Tree): insert & search in O(m) where m = word length. Great for autocomplete.",
+      "Z-algorithm: find all pattern occurrences in O(n+m). Builds Z-array of match lengths.",
+    ],
+    questions:[
+      {id:"s1",type:"theory",q:"What is the time complexity of KMP pattern matching?",options:["O(n×m)","O(n+m)","O(n log m)","O(m²)"],answer:1,explanation:"KMP: O(m) to build the LPS (failure) array, O(n) for matching. Total O(n+m). The failure function ensures each character is processed at most twice — never revisited."},
+      {id:"s2",type:"theory",q:"How to check if two strings are anagrams in O(n) time, O(1) space?",options:["Sort both and compare O(n log n)","Frequency array int[26]: +1 for s1, -1 for s2, check all zeros","Compare char by char directly","Rolling hash both strings"],answer:1,explanation:"int[26] freq array: for each char in s1 → freq[c–'a']++; for each char in s2 → freq[c–'a']--. If any value ≠ 0 → not anagrams. O(n) time, O(26) = O(1) space."},
+      {id:"s3",type:"leetcode",q:"LC #3 Longest Substring Without Repeating Chars — best approach?",options:["Brute force O(n³)","Sliding window + HashSet O(n)","Sort then scan O(n log n)","DP table O(n²)"],answer:1,explanation:"Sliding window: maintain a HashSet of chars in window [left,right]. Extend right; if duplicate found, shrink left until removed. Track max window size. Each char added/removed at most once → O(n)."},
+      {id:"s4",type:"leetcode",q:"LC #5 Longest Palindromic Substring — for 'babad', valid answers are?",options:["Only 'bab'","Only 'aba'","Both 'bab' and 'aba' (both length 3)","'babad' itself"],answer:2,explanation:"Both 'bab' and 'aba' are valid — both length 3. Expand-around-center: try each index as center (odd length) and each pair as center (even length). O(n²) time, O(1) space. Manacher's is O(n) but complex."},
+    ]
+  },
+  linkedlist:{
+    theory:[
+      "Singly LL: node has data + next pointer. Doubly LL: also has prev pointer.",
+      "Access: O(n) — must traverse from head. Insert/Delete at head: O(1).",
+      "Floyd's Cycle Detection: slow (1 step) + fast (2 steps). If cycle exists, they MUST meet. O(n), O(1).",
+      "Find Middle: slow/fast pointers. When fast hits end, slow is at middle. Single pass.",
+      "Reverse Iteratively: prev=null, curr=head. Loop: next=curr.next; curr.next=prev; prev=curr; curr=next.",
+      "Merge Two Sorted Lists: dummy head + compare both list heads, attach smaller, advance that pointer.",
+      "Remove Nth from End: two pointers gap of n. When fast reaches end, slow.next is target.",
+      "Detect Cycle Start: after Floyd's meeting point, move one pointer to head. They meet at cycle start.",
+    ],
+    questions:[
+      {id:"l1",type:"theory",q:"What is Floyd's Cycle Detection algorithm?",options:["HashSet to store all visited node addresses","Slow (1 step) + Fast (2 steps) — if they meet, cycle exists","Count nodes and check for total repetition","DFS from head node"],answer:1,explanation:"Floyd's: slow moves 1 step, fast 2 steps each iteration. If cycle exists, fast eventually 'laps' slow and they meet inside the cycle — mathematically guaranteed. O(n) time, O(1) space. No extra memory!"},
+      {id:"l2",type:"theory",q:"How to find the middle of a Linked List in one pass?",options:["Count nodes, traverse again to n/2","Slow (1 step) + Fast (2 steps) pointer technique","Store all nodes in array, return index n/2","Binary search on the list"],answer:1,explanation:"When fast pointer reaches null (end), slow pointer is at the middle. For 6 nodes: fast takes 3 jumps to reach end; slow takes 3 steps to reach node 4 (middle). Single O(n) pass, O(1) space."},
+      {id:"l3",type:"leetcode",q:"LC #206 Reverse Linked List — best iterative approach?",options:["Use a stack, push all, pop to rebuild","prev=null, curr=head; each step: reverse curr.next=prev, advance both","Recursively reverse from the tail","Store in array and re-link in reverse"],answer:1,explanation:"Three-pointer: while(curr != null) { next = curr.next; curr.next = prev; prev = curr; curr = next; } Return prev. O(n) time, O(1) space. Recursion works but uses O(n) call stack space."},
+      {id:"l4",type:"leetcode",q:"LC #21 Merge Two Sorted Lists — time complexity of optimal solution?",options:["O(n log n)","O(n + m)","O(n²)","O(max(n,m) log 2)"],answer:1,explanation:"O(n+m): use dummy head node. Compare heads of both lists, attach the smaller node, advance that list's pointer. Repeat until one list exhausted, attach remaining. Exactly n+m comparisons total. O(1) extra space."},
+    ]
+  },
+  stack:{
+    theory:[
+      "Stack: LIFO. push/pop/peek all O(1). Implemented via array or linked list.",
+      "Queue: FIFO. enqueue/dequeue O(1) with deque. ArrayDeque in Java is fastest.",
+      "Monotonic Stack: maintains increasing or decreasing order. Used for Next Greater Element in O(n).",
+      "Two-Stack Queue: enqueue→Stack1; dequeue→Stack2 (refill from S1 when S2 empty). Amortized O(1).",
+      "Stack apps: balanced parentheses, infix→postfix conversion, undo operations, DFS.",
+      "Queue apps: BFS, level-order traversal, task scheduling, sliding window maximum.",
+      "Monotonic Deque: for Sliding Window Maximum — remove smaller elements from back, expired from front.",
+      "Min Stack: pair each element with current minimum. getMin() in O(1) always.",
+    ],
+    questions:[
+      {id:"sq1",type:"theory",q:"What problem does a Monotonic Stack solve efficiently?",options:["Sorting in O(n)","Finding Next Greater/Smaller Element in O(n) total","Implementing a queue using stacks","Balanced parentheses checking"],answer:1,explanation:"Monotonic Stack for NGE: push index. When arr[i] > arr[stack.top()], that top element's NGE is arr[i]. Pop and record. Each element pushed/popped exactly once → O(n) total. Naive brute-force is O(n²)."},
+      {id:"sq2",type:"theory",q:"How to implement a Queue using two Stacks?",options:["Not possible","Stack1 for enqueue; Stack2 for dequeue — transfer S1→S2 when S2 is empty","Use both stacks simultaneously","Use a linked list internally"],answer:1,explanation:"Enqueue: push to S1. Dequeue: if S2 empty, pour ALL of S1 into S2 (this reverses order), then pop from S2. Each element moves at most twice total → amortized O(1) per operation. This is LeetCode #232."},
+      {id:"sq3",type:"leetcode",q:"LC #20 Valid Parentheses — is '([{}])' valid?",options:["Yes, valid","No, invalid","Only in some languages","Stack would overflow"],answer:0,explanation:"YES! Push opening brackets. On closing: pop top and verify match. Trace: push '(' → push '[' → push '{' → see '}': pop '{' ✓ → see ']': pop '[' ✓ → see ')': pop '(' ✓. Stack empty at end → VALID."},
+      {id:"sq4",type:"leetcode",q:"LC #239 Sliding Window Maximum — which gives O(n) solution?",options:["Max-Heap (priority queue) O(n log k)","Monotonic Deque O(n)","Sorted Set O(n log k)","Two pointer O(n²)"],answer:1,explanation:"Monotonic Deque: keep indices in decreasing value order. Before adding i: remove back indices with values ≤ arr[i] (they'll never be max). Remove front if outside window [i–k+1, i]. Front is always current window maximum. O(n) total."},
+    ]
+  },
+  trees:{
+    theory:[
+      "Binary Tree: each node has at most 2 children (left, right). Root is top node.",
+      "BST: left subtree < root < right subtree. Search/Insert/Delete O(h), h = height.",
+      "Balanced BST (AVL/RB-Tree): height O(log n) → all operations O(log n) guaranteed.",
+      "Inorder (LNR): gives sorted order for BST. Preorder (NLR): clone/serialize. Postorder (LRN): delete/evaluate.",
+      "BFS / Level Order: use a Queue. Enqueue root, loop: dequeue → process → enqueue children.",
+      "Height: 1 + max(height(left), height(right)). Leaf node height = 1. Null node height = 0.",
+      "LCA (Lowest Common Ancestor): deepest node that is ancestor of both targets. Key for distance queries.",
+      "Segment Tree: O(log n) range queries AND updates. O(n) space. Beats prefix sum for mutable arrays.",
+    ],
+    questions:[
+      {id:"t1",type:"theory",q:"Inorder traversal of a BST produces what output?",options:["Random order","Sorted ascending order","Level-by-level order","Reverse sorted order"],answer:1,explanation:"Inorder (Left→Node→Right) of any BST gives elements in sorted ascending order. This is the fundamental BST property used to verify BST validity, find kth smallest, and convert BST to sorted array."},
+      {id:"t2",type:"theory",q:"What data structure powers BFS Level-Order tree traversal?",options:["Stack","Queue","Priority Queue","Deque"],answer:1,explanation:"Queue (FIFO): enqueue root. Loop: dequeue node → process → enqueue left child → enqueue right child. FIFO guarantees all level-k nodes are processed before any level-(k+1) node. Stack gives DFS, not BFS."},
+      {id:"t3",type:"theory",q:"Height of a balanced binary tree with n nodes?",options:["O(n)","O(n²)","O(log n)","O(n log n)"],answer:2,explanation:"Each level doubles nodes: level 0=1, level 1=2, …, level h=2^h. So n ≈ 2^h → h ≈ log₂(n). Unbalanced tree (like a linked list) degrades to O(n) height. Balancing algorithms (AVL, Red-Black) maintain O(log n)."},
+      {id:"t4",type:"leetcode",q:"LC #236 LCA of Binary Tree — key recursive insight?",options:["BFS simultaneously from both nodes","If root==p or root==q return root; recurse both sides; if both non-null → current node is LCA","Sort nodes by depth","Use parent pointers to trace up to root"],answer:1,explanation:"Elegant recursion: base case → return if null/p/q. Recurse left and right. If BOTH return non-null → p and q are in different subtrees → current node is LCA! If only one side → LCA is deeper in that subtree. O(n) time."},
+      {id:"t5",type:"leetcode",q:"LC #543 Diameter of Binary Tree — what does 'diameter' mean?",options:["Height of the tree","Number of nodes","Longest path between ANY two nodes (may NOT pass through root)","Width of the widest level"],answer:2,explanation:"Diameter = longest path (number of edges) between any two nodes. It may bypass the root entirely! For each node: path_through_it = left_height + right_height. Global max of all such values = diameter. Single DFS pass O(n)."},
+    ]
+  },
+  graphs:{
+    theory:[
+      "Graph: V vertices + E edges. Directed or Undirected. Weighted or Unweighted.",
+      "BFS: shortest path (unweighted) O(V+E). Uses Queue. Explores layer by layer.",
+      "DFS: cycle detection, topological sort, connected components O(V+E). Uses Stack/recursion.",
+      "Dijkstra: shortest path (non-negative weights) O((V+E) log V) with min-heap.",
+      "Bellman-Ford: shortest path (allows negative weights) O(V×E). Detects negative cycles.",
+      "Floyd-Warshall: all-pairs shortest path O(V³). Simple DP: dp[i][j] via intermediate node k.",
+      "Union-Find (DSU): near-O(1) per op with path compression + union by rank. Used for Kruskal's MST.",
+      "Topological Sort: only for DAGs. Kahn's (BFS + in-degree) or DFS with finish order.",
+    ],
+    questions:[
+      {id:"g1",type:"theory",q:"Which algorithm finds shortest path in an UNWEIGHTED graph?",options:["Dijkstra","BFS","DFS","Bellman-Ford"],answer:1,explanation:"BFS guarantees minimum edges (shortest path) in unweighted graphs. Each BFS layer = exactly one more edge from source. First time we reach a node = fewest edges. Dijkstra generalizes to weighted but is overkill for unweighted."},
+      {id:"g2",type:"theory",q:"When does Dijkstra's algorithm FAIL?",options:["On disconnected graphs","On graphs with NEGATIVE edge weights","On undirected graphs","On very large graphs"],answer:1,explanation:"Dijkstra assumes: once a node is popped from the min-heap, its shortest distance is FINAL. Negative edges can create shorter paths discovered later, violating this. Use Bellman-Ford O(V×E) for negative edges."},
+      {id:"g3",type:"theory",q:"Topological Sort is only valid for what type of graph?",options:["Undirected graphs","DAG — Directed Acyclic Graph","Weighted graphs","Connected graphs only"],answer:1,explanation:"Topological Sort requires a DAG. If any cycle exists, no valid linear ordering is possible (which comes first — chicken or egg?). Kahn's algorithm naturally detects cycles: if result has fewer than V nodes → cycle present."},
+      {id:"g4",type:"leetcode",q:"LC #200 Number of Islands — most common approaches?",options:["BFS flood-fill only","DFS flood-fill only","Union-Find only","BFS, DFS, and Union-Find all work — each O(m×n)"],answer:3,explanation:"All three work in O(m×n). DFS/BFS: find '1', flood-fill all connected '1's to '0' (visited), count calls. Union-Find: union adjacent '1' cells, count distinct components. DFS is typically simplest to write in interviews."},
+      {id:"g5",type:"leetcode",q:"LC #207 Course Schedule (cycle detection) — which algorithm works?",options:["Dijkstra","DFS with 3 states (white/gray/black) OR Kahn's topological sort","BFS level traversal","Floyd-Warshall"],answer:1,explanation:"DFS: WHITE=unvisited, GRAY=currently in DFS path, BLACK=fully done. Reaching a GRAY node = back edge = cycle! Kahn's: if topological sort processes all n nodes → no cycle. Fewer nodes → cycle. Both O(V+E)."},
+    ]
+  },
+  hashing:{
+    theory:[
+      "HashMap: key-value pairs. Average O(1) insert/delete/search. Worst O(n) on many collisions.",
+      "Hash Function: maps key to bucket index. Good functions minimize collisions.",
+      "Chaining: each bucket holds a linked list of colliding elements. Simple, handles high load.",
+      "Open Addressing: probe for next empty slot (linear/quadratic probing or double hashing).",
+      "Load Factor: n/m (items/buckets). Rehash at 0.75 in Java's HashMap to keep O(1) amortized.",
+      "HashSet: stores unique keys only. O(1) contains/add/remove. Used for visited tracking.",
+      "Use cases: Two Sum, anagram grouping, frequency count, LRU Cache, duplicate detection.",
+      "LRU Cache = HashMap + Doubly Linked List → O(1) get and put. Classic design problem.",
+    ],
+    questions:[
+      {id:"h1
